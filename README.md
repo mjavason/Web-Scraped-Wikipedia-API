@@ -86,7 +86,6 @@ To retrieve a Wikipedia summary, follow these steps:
    }
    ```
 
-This sample scenario demonstrates how developers can easily access Wikipedia summaries for various topics using the Wikipedia Web Scraper API.
 
 ## Contributing
 
