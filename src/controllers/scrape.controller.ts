@@ -32,6 +32,12 @@ class Controller {
       if (summary) {
         const cleanSummary = removeSpecialCharacters(removeNewlines(summary));
 
+        if (
+          cleanSummary.substring(cleanSummary.length, cleanSummary.length - 12) === 'may refer to'
+        ) {
+          return NotFoundResponse(res, 'Summary not found for the specified subject.');
+        }
+
         if (cleanSummary.length <= 420) {
           // If the summary is within the character limit, return it as is
           return SuccessResponse(res, { subject, summary: cleanSummary });
