@@ -3,6 +3,7 @@ import { load } from 'cheerio';
 import { decode } from 'html-entities';
 import { SuccessResponse, NotFoundResponse, InternalErrorResponse } from '../helpers/response';
 import ApiService from '../services/api.service';
+import removeSpecialCharacters from '../utils/removeSpecialCharacters';
 
 function removeNewlines(inputString: string) {
   // Use the replace method with a regular expression to replace all newline characters with an empty string
@@ -29,17 +30,25 @@ class Controller {
       );
 
       if (summary) {
-        const cleanSummary = removeNewlines(summary);
+        const cleanSummary = removeSpecialCharacters(removeNewlines(summary));
 
-        // Find the position of '[1]' in the summary
-        const index = cleanSummary.indexOf('[1]');
-        if (index !== -1) {
-          // If '[1]' is found, extract the summary up to that point
-          const truncatedSummary = cleanSummary.slice(0, index);
-
-          return SuccessResponse(res, { subject, summary: truncatedSummary });
-        } else {
+        if (cleanSummary.length <= 420) {
+          // If the summary is within the character limit, return it as is
           return SuccessResponse(res, { subject, summary: cleanSummary });
+        } else {
+          // Find the last full stop (period) within the first 420 characters
+          const lastFullStopIndex = cleanSummary.lastIndexOf('.', 420);
+
+          if (lastFullStopIndex > 0) {
+            // Slice the summary up to the last full stop within the character limit
+            return SuccessResponse(res, {
+              subject,
+              summary: cleanSummary.slice(0, lastFullStopIndex + 1),
+            });
+          } else {
+            // If no full stop is found, return the first 420 characters
+            return SuccessResponse(res, { subject, summary: cleanSummary.slice(0, 420) });
+          }
         }
       } else {
         return NotFoundResponse(res, 'Summary not found for the specified subject.');
